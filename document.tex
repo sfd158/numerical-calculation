@@ -1,0 +1,355 @@
+\documentclass{ctexart}
+\usepackage{amsmath}
+\usepackage{fontspec,xunicode,xltxtra}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{bm}
+%\titleformat{\section}{\Large}{\thesection}{1em}{}
+
+\title{数值计算实验报告}
+\author{宋振华}
+
+\begin{document}
+	\maketitle
+	\clearpage
+	\setcounter{section}{-1}
+\section{简介}
+\section{第一章}
+\subsection{基本概念}
+	\paragraph{误差}
+		\begin{enumerate}
+			\item 误差的来源
+			由于计算机中二进制数精度有限, 存在截断误差(10进制与2进制互相转化, 2进制计算); 
+			\item 误差的类型
+				\subitem 截断误差: 通常指的是, 用一个基本表达式替换一个相当复杂的算术表达式时, 所引入的误差. 这个术语从用截断泰勒级数替换一个复杂表达式的技术衍生而来.
+				\subitem 舍入误差: 计算机表示的示数受限于尾数的固定精度, 因此有时并不能确切地表示真实值, 这一类型的误差称为舍入误差.
+			\item 误差度量方法: 
+			设$\hat{p}$是$p$的近似值,
+				\subitem 相对误差
+				$$R_p = \frac{\left|p-\hat{p} \right|}{p}, p\neq 0$$
+				\subitem 绝对误差
+				$$E_p = \left|p - \hat{p}\right|$$
+				\subitem 当$\left|p\right|$远离$1$时(大于或小于), 相对误差$R_p$比误差$E_p$能更好地表示近似值的精确程度.
+		\end{enumerate}
+
+	\paragraph{迭代序列收敛性}
+		\subparagraph{误差的收敛阶}
+			\begin{enumerate}
+				\item 序列的收敛阶
+				设$\lim\limits_{n\to \infty}x_n = x$, 有序列$\left\{r_n \right\}_{n=1}^{\infty}$, 且$\lim\limits_{n \to \infty}r_n = 0$. 如果存在常量$K>0$, 满足
+				$\frac{\left|x_n - x\right|}{\left|r_n \right|} \leq K$, $n$足够大, 则称$\left\{ x_n\right\}_{n=1}^{\infty}$以收敛阶$\bm{O}\left(r_n\right)$收敛于$x$.
+				可以将其表示为$x_n = x + \bm{O} \left(r_n\right)$, 或表示为$x_n \to x$, 收敛阶为$\bm{O}\left(r_n\right)$.
+				\item 表达
+			\end{enumerate}
+		\subparagraph{阶的估计表达}
+	\paragraph{其他概念}
+		\begin{enumerate}
+			\item 误差传播途径
+			\subitem 加法运算: 考虑数$p$和$q$(真实值)的加法运算, 它们的近似值分别为$\hat{p}$和$\hat{q}$, 误差分别为$\epsilon_p$和$\epsilon_q$. 从$p=\hat{p}+\epsilon_p$和$q = \hat{q} + \epsilon_q$开始, 它们的和为
+			$$p+q = \left(\hat{p} + \epsilon_p\right) + \left(\hat{q} + \epsilon_q\right) = \left(\hat{p} + \hat{q}\right) + \left(\epsilon_p + \epsilon_q\right)$$
+			因此对于加法运算, 和的误差是每个加数误差的和.
+			\subitem 乘法运算: 乘积表达式如下所示:
+			$$pq = \left(\hat{p}+\epsilon_p\right)\left(q+\epsilon_q\right) = \hat{p}\hat{q} + \hat{p}\epsilon_q + \hat{q}\epsilon_p + \epsilon_p\epsilon_q$$.
+			因此, 如果$\left|\hat{p}\right|>1, \left|\hat{q} \right| > 1$, 则原来的误差$\epsilon_p$和$\epsilon_q$会被放大成$\hat{p}\epsilon_q$和$\hat{q}\epsilon_p$. \\
+			假设$p \neq 0, q \neq 0$, 则相对误差
+			$$R_{pq} = \frac{pq-\hat{p}\hat{q}}{pq} = \frac{\hat{p}\epsilon_p}{pq} + \frac{\hat{q}\epsilon_p}{pq} + \frac{\epsilon_p \epsilon_q}{pq}$$
+			进一步假设$\hat{p}, \hat{q}$是$p,q$的好的近似, 则$\frac{\hat{p}}{p}\approx 1, \frac{\hat{q}}{q} \approx 1, R_pR_q = \left(\frac{\epsilon_p}{p}\right) \left(\frac{\epsilon_q}{q}\right) \approx 0$, $R_p,R_q$是$\hat{p},\hat{q}$的相对误差. 将它们替换到上式, 可以得到如下简化关系式:
+			$$R_{pq} = \frac{pq - \hat{p}\hat{q}}{pq} \approx \frac{\epsilon_q}{q} + \frac{\epsilon_p}{p} + 0 = R_q + R_p$$
+			这表明乘积$pq$的相对误差大致等于$\hat{p},\hat{q}$的相对误差之和.
+			\subitem 初始误差通过一系列计算进行传播. 对于任何数值计算而言, 都要尽量减少初始误差, 因为初始条件下的小误差对最终结果产生的影响较小. 这样的算法称为稳定算法, 否则称为不稳定算法.
+			\item 误差增长: 
+			设$\epsilon$表示初始误差, $\epsilon\left(n\right)$表示第$n$步计算后的误差增长. 如果$\left|\epsilon \left(n\right)\right| \approx n\epsilon$, 则称误差按线性增长. 如果$\left|\epsilon\left(n\right) \right| \approx K^n\epsilon$, 则称误差按指数增长. 如果$K > 1$, 当$n \to \infty$时, 指数误差增长无界; 如果$0 < K < 1$, 则当$n \to \infty$时, 指数误差的增长趋于0.
+			\item 误差的累积
+			\item 局部误差
+			\item 总体误差
+		\end{enumerate}
+
+\subsection{上机实验}
+	\paragraph{1.3.10}
+	\paragraph{1}
+		\subparagraph{题目}
+		根据习题12和习题13构造算法和MATLAB程序, 以便精确计算所有情况下的二次方程的根, 包括$\left|b\right| \approx \sqrt{b^2 - 4ac}$的情况.
+		习题12:
+		
+		改进二次根公式. 设$a \neq 0, b^2-4ac>0, ax^2+bx+c=0$. 通过如下二次根公式可解出方程的根:
+		\begin{equation}
+			x_1 = \frac{-b+\sqrt{b^2-4ac}}{2a} \ \ \
+			x_2 = \frac{-b-\sqrt{b^2-4ac}}{2a}
+		\end{equation}
+		证明这些根可通过下列等价公式解出:
+		\begin{equation}
+			\begin{aligned}
+				x_1 = \frac{-2c}{b+\sqrt{b^2-4ac}} \ \ \
+				x_2 = \frac{-2c}{b-\sqrt{b^2-4ac}}
+			\end{aligned}
+		\end{equation}
+		批注: 当$\left|b \right| \approx \sqrt{b^2-4ac}$时, 必须小心处理, 以避免其值过小引起的巨量消失而带来的精度损失.
+		
+		求解:
+		证明:
+		$$x_1 = \frac{-b+\sqrt{b^2-4ac}}{2a} = \frac{\left(-b+\sqrt{b^2-4ac}\right)\times \left(b+\sqrt{b^2-4ac}\right)}{2a\times\left(b+\sqrt{b^2-4ac}\right)} = \frac{-2c}{b+\sqrt{b^2-4ac}}$$
+		$$x_2 = \frac{-b-\sqrt{b^2-4ac}}{2a} = \frac{\left(-b-\sqrt{b^2-4ac}\right)\times \left(b-\sqrt{b^2-4ac}\right)}{2a\times \left(b-\sqrt{b^2-4ac}\right)} = \frac{-2c}{b-\sqrt{b^2-4ac}}$$
+		
+		习题13: 利用习题12中求解$x_1,x_2$的公式, 计算下列二次方程的根.
+		\begin{enumerate}
+			\item $x^2-1000.001x+1=0$
+			\item $x^2-10000.0001x+1=0$
+			\item $x^2-100000.00001x+1=0$
+			\item $x^2-1000000.000001x+1=0$
+		\end{enumerate}
+	
+		求解:
+		\begin{enumerate}
+			\item $x_1 = 1000.0, x_2 = 10^{-3}$;
+			\item $x_1 = 10000.0, x_2 = 10^{-4}$;
+			\item $x_1 = 100000.0 , x_2 = 10^{-5}$;
+			\item $x_1 = 1000000.0 , x_2 = 10^{-6}$;
+		\end{enumerate}
+		代码如下:
+		\begin{lstlisting}[language=python]
+from math import sqrt
+def calc(a,b,c):
+    t = sqrt(b**2-4*a*c)
+    if abs(b-t) < 1e-7:
+        x1 = (-2*c)/(b+t)
+        x2 = (-b-t)/(2*a)
+    else:
+        x1 = (-b+t)/(2*a)
+        x2 = (-2*c)/(b-t)
+    return x1, x2
+		\end{lstlisting}
+	\paragraph{2}
+	参考例1.25, 对系列3个差分方程计算出前10个数值近似值. 在每种情况下, 引入一个小的初始误差. 如果没有初始误差, 每个差分方程将生成序列$\left\{ 1/2^n\right\}_{n=1}^{\infty}$.
+	\begin{enumerate}
+		\item $r_0=0.994,r_n=\frac{1}{2}r_{n-1},n=1,2,\cdots$
+		\item $p_0=1,p_1=0.497,p_n=\frac{3}{2}p_{n-1}-\frac{1}{2}p_{n-2},n=2,3,\cdots$
+		\item $q_0=1,q_1=0.497,q_n=\frac{5}{2}q_{n-1}-q_{n-2},n=2,3,\cdots$
+	\end{enumerate}
+\section{第二章}
+\subsection{本章内容}
+	\subsubsection{基本概念}
+		\begin{enumerate}
+			\item 方程的根: 
+			\item 不动点: 
+			\item 迭代: 
+			\item 收敛性: 
+			\item 收敛速度: 
+			\item 误差及控制: 
+			\item 算法及收敛速率:
+				\subitem 不动点迭代:
+				\subitem 二分法:
+				\subitem 牛顿法: 
+				\subitem 割线法:
+				\subitem 试位法:
+		\end{enumerate}
+		
+	\subsubsection{算法及其收敛速率}
+\subsection{上机实验}
+\paragraph{实验1}
+	利用牛顿法求解方程
+	\begin{equation}
+		\frac{1}{2} + \frac{1}{4}x^2 - x\sin x - \frac{1}{2}\cos 2x = 0
+	\end{equation}
+	分别取$x_0 = \frac{\pi}{2}, 5\pi, 10\pi$, 使得精度不超过$10^{-5}$. 比较初值对计算结果的影响.
+\section{第三章}
+\subsection{上机实验}
+	\subparagraph{1}
+	求解线性方程组
+	\begin{equation}
+		\left\{
+		\begin{aligned}
+		4x-y+z &=7 \\
+		4x-8y+z &= -21 \\
+		-2x+y+5z&=15 \\
+		\end{aligned}
+		\right.
+	\end{equation}
+	\begin{enumerate}
+		\item 试用LU分解求解此方程组;
+		\item 分别用Jacobi, Gauss-Seidel方法求解此方程组
+	\end{enumerate}
+	\subparagraph{2}
+	3.6.5算法与程序(P118), 3,4
+	3. 设有如下三角线性方程组, 而且系数矩阵具有严格对角优势:
+	$$
+	\begin{aligned}
+		d_1 x_1 + c_1 x_2 &= b_1 \\
+		a_1 x_1 + d_2 x_2 + c_2 x_3 &= b_2 \\
+	\end{aligned}
+	$$
+	\begin{enumerate}
+		\item 设计一个算法来求解上述方程组. 算法必须有效地利用系数矩阵的稀疏性.
+		\item 根据上面算法, 构造一个程序, 并求解下列三角线性方程组.
+
+	\end{enumerate}
+\section{第四章}
+\subsection{基本概念}
+	\begin{enumerate}
+		\item 向量与矩阵范数
+		\item 特殊矩阵
+			\subitem 对称正定矩阵
+			\subitem 对角占优矩阵
+		\item 算法及其收敛速率
+			\subitem 直接求解算法: $LU$分解
+			\subitem 对称矩阵的$LL^T$,$LDL^T$分解
+				\subsubitem $LL^T$分解
+				\subsubitem $LDL^T$分解
+			\subitem 迭代算法
+				\subsubitem Jacobi
+				\subsubitem Gauss-Seidel
+				\subsubitem SOR
+	\end{enumerate}
+\subsection{上机实验}
+	在区间$\left[-5,5\right]$上, 生成11个等距插值节点$x_i, i=0,1,\cdots,10$. 在相应插值节点上计算函数
+	\begin{equation}
+		y\left(x\right) = \frac{1}{1+x^2}
+	\end{equation}
+	的函数值作为观测值, $y\left(x_i\right),i=0,1,2,\cdots,10$.
+	\begin{enumerate}
+		\item 利用这11个数据点, 生成一个10次拉格朗日插值多项式$P_{10}\left(x\right)$, 并做出插值函数与原函数的对比结果图.
+		\item 利用此多项式近似计算
+			\begin{equation}
+				\int_{-5}^{5}\frac{1}{1+x^2}dx \approx \int_{-5}^{5}P_{10}\left(x\right)dx
+			\end{equation}
+			与解析解比较, 分析误差产生的原因.
+		\item 利用$\left\{\left(x_i, y\left(x_i\right) \right) \right\}_{i=0}^{10}$, 构造分片线性插值多项式$P\left(x\right)$, 并利用此分片插值多项式近似计算积分
+			\begin{equation}
+				\int_{-5}^{5}\frac{1}{1+x^2}dx \approx \int_{-5}^{5}P_{10}\left(x\right)dx
+			\end{equation}
+		\item 若希望提高积分的计算精度, 试提出你自己的建议, 并进行实验测试验证.
+	\end{enumerate}
+	求解:
+	\begin{enumerate}
+		\item 
+		绘图:
+		\begin{figure}
+			
+		\end{figure}
+		代码:
+		\begin{lstlisting}[language=python]
+import numpy as np
+import matplotlib.pyplot as plt
+def get_li(xi, x_set = []):
+    def li(Lx):
+        W,c = 1., 1.
+        for each_x in x_set:
+            if each_x != xi:
+                W = W * (Lx - each_x)
+                c = c * (xi - each_x)   
+        return W / c    
+    return li
+def get_Lxfunc(x = [], fx = []):
+    set_of_lifunc = []
+    for each in x:
+        lifunc = get_li(each, x)
+        set_of_lifunc.append(lifunc)
+
+    def Lxfunc(Lx):
+        res = 0
+        for i in range(len(x)):
+            res = res + fx[i]*set_of_lifunc[i](Lx)
+        return res
+
+    return Lxfunc
+l,r,cnt = -5.,5.,11
+x = np.linspace(l,r,cnt)
+y0 = 1/(1+x**2)
+Lx = get_Lxfunc(x,y0)
+tmpx = np.linspace(l,r,100)
+tmpy0 = 1/(1+tmpx**2)
+tmpy = [Lx(i) for i in tmpx]
+plt.plot(tmpx, tmpy, tmpx, tmpy0, x, y0, 'o')
+plt.show()
+		\end{lstlisting}
+		\item 
+	\end{enumerate}
+	
+\section{第五章: 最小二乘拟合}
+\subsection{基本概念}
+
+\subsection{上机实验}
+\paragraph{P184 算法与程序:2}
+\subparagraph{题目}
+根据下列数据, 使用例5.3中的幂曲线拟合, 写一个程序求解重力常量$g$.\\
+\begin{minipage}{\textwidth}
+	\begin{minipage}[t]{0.45\textwidth}
+		\centering
+		\makeatletter\def\@captype{table}\makeatother\caption{a}
+		\begin{tabular}{c|c}
+			\hline
+			$t_k$ & $d_k$ \\
+			\hline
+			$0.200$ & $0.1960$ \\
+			$0.400$ & $0.7835$ \\
+			$0.600$ & $1.7630$ \\
+			$0.800$ & $3.1345$ \\
+			$1.000$ & $4.8975$ \\
+			\hline
+		\end{tabular}
+	\end{minipage}
+	\begin{minipage}[t]{0.45\textwidth}
+		\centering
+		\makeatletter\def\@captype{table}\makeatother\caption{b}
+		\begin{tabular}{c|c}        
+			\hline
+			$x_k$ & $F_k$ \\
+			\hline
+			$0.2$ & $0.1965$ \\
+			$0.4$ & $0.7855$ \\
+			$0.6$ & $1.7675$ \\
+			$0.8$ & $3.1420$ \\
+			$1.0$ & $4.9095$ \\
+			\hline
+		\end{tabular}
+	\end{minipage}
+\end{minipage}
+\subparagraph{求解}
+由物理学公式知, 运动方程为
+$$d_k = v_0t + \frac{1}{2}gt^2$$
+
+\paragraph{P207 算法与程序:3}
+\subparagraph{题目}
+使用上题的程序, 根据点$\left(0,1\right), \left(1,0\right), \left(2,0\right), \left(3,1\right), \left(4,2\right), \left(5,2\right),\left(6,1\right)$, 求$5$种不同的三次样条插值, 其中$S'\left(0\right) = -0.6, S'\left(6\right)=-1.8,S^{''}\left(0\right)=1,S^{''}\left(6\right)=-1$. 在同一坐标系下, 画出这5个三次样条插值和这些数据点.
+\subparagraph{求解}
+\section{第六章 数值微分}
+\subsection{基本概念}
+\subsection{上机实验}
+\paragraph{6.1.6算法与程序(P235):1(b)}
+用程序6.1求解下列函数在$x$处的导数近似值, 精度为小数点后13位. 注: 有必要改写程序中的$max1$的值和$h$的初值值.
+\subparagraph{题目}
+\begin{enumerate}
+	\item $f\left(x\right) = 60x^{45}-32x^{33}+233x^{5}-47x^{2}-77; x=\frac{1}{\sqrt{3}}$
+	\item $f\left(x\right) = \tan\left(\cos\left(\frac{\sqrt{5}+\sin\left(x\right)}{1+x^2}\right)\right); x=\frac{1+\sqrt{5}}{3}$
+	\item $f\left(x\right) = \sin\left(\cos\left(\frac{1}{x}\right)\right); x=\frac{1}{\sqrt{2}}$
+	\item $f\left(x\right) = \sin\left(x^3-7x^2+6x+8\right); x=\frac{1-\sqrt{5}}{2}$
+	\item $f\left(x\right) = x^{x^{x}}; x=0.0001$
+\end{enumerate}
+\subparagraph{求解}
+
+\section{第七章: 数值积分}
+\subsection{基本概念}
+\subsection{上机实验}
+\paragraph{7.2.3 算法与程序(P262) 2}
+\subparagraph{题目}
+用程序7.2求习题2中的定积分, 精确到小数点后11位.
+\subparagraph{求解}
+
+\paragraph{7.2.3 算法与程序(P262) 3}
+\subparagraph{题目}
+修改组合梯形公式, 使之可以求只有若干点函数值已知的函数积分. 将程序7.1修改为求区间$\left[a,b\right]$上过$M$个给定点的函数$f\left(x\right)$的积分逼近. 注意节点不需要等距.
+
+注: 程序7.1为组合梯形公式, 代码如下:
+\begin{lstlisting}
+function s=trap1(f,a,b,M)
+h = (b-a)/M;
+s = 0;
+for k=1:(M-1)
+	x = a+h*k;
+	s = s + feval(f,x);
+end
+s = h * (feval(f,a)+feval(f,b))/2+h*s;
+\end{lstlisting}
+ 利用该程序求过点$\left\{\left(\sqrt{k^2+1},k^{1/3} \right) \right\}_{k=0}^{13}$的函数积分逼近.
+\section{总结}
+在本学期课程中, 
+\end{document}
